@@ -77,7 +77,26 @@
 
 <script>
     var id;
-    document.getElementById("post").onclick = function (){ 
+    var liffID = "{{liffID}}"
+
+    liff.init({
+        liffId: liffID
+    }).then(() => {
+        if (!liff.isLoggedIn()) {
+            liff.login();
+            liff.getProfile().then(profile => {
+                id = profile.userId;
+            })
+            .catch((err) => {
+                console.log('error', err);
+            });
+        }
+    })
+    .catch((err) => {
+        console.log(err.code, err.message);
+    });
+
+    document.getElementById("post").onclick = function(){ 
         $.ajax({
             url: "/" + id 
                 + "&" + document.getElementById('wood').checked
@@ -96,24 +115,5 @@
         alert("你已經完成登記！");
     };
 
-    var liffID = "{{liffID}}"
-    console.log(liffID)
 
-    liff.init({
-        liffId: liffID
-    }).then(() => {
-        if (!liff.isLoggedIn()) {
-            liff.login();
-            liff.getProfile().then(profile => {
-                id = profile.userId;
-                console.log(id);
-            })
-            .catch((err) => {
-                console.log('error', err);
-            });
-        }
-    })
-    .catch((err) => {
-        console.log(err.code, err.message);
-    });
 </script>
