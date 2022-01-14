@@ -84,34 +84,33 @@
     }).then(() => {
         if (!liff.isLoggedIn()) {
             liff.login();
-            liff.getProfile().then(profile => {
-                id = profile.userId;
-            })
-            .catch((err) => {
-                console.log('error', err);
-            });
         }
     })
     .catch((err) => {
         console.log(err.code, err.message);
     });
 
-    document.getElementById("post").onclick = function(){ 
-        $.ajax({
-            url: "/" + id 
-                + "&" + document.getElementById('wood').checked
-                + "&" + document.getElementById('fire').checked
-                + "&" + document.getElementById('one').checked
-                + "&" + document.getElementById('two').checked
-                + "&" + document.getElementById('three').checked,
-            type:"get",
-            dataType:"text",
-            success: function(msg){
-                console.log(msg);
-            },
-            error:function(xhr, ajaxOptions, thrownError){ 
-            }                
-        });
+    document.getElementById("post").onclick = function(){
+        liff.getProfile().then(profile => {
+            id = profile.userId;
+            $.ajax({
+                url: "/data/" + id 
+                    + "&" + document.getElementById('wood').checked
+                    + "&" + document.getElementById('fire').checked
+                    + "&" + document.getElementById('one').checked
+                    + "&" + document.getElementById('two').checked
+                    + "&" + document.getElementById('three').checked,
+                type:"get",
+                dataType:"text",
+                success: function(msg){
+                    console.log(msg);
+                },
+                error: function(xhr, ajaxOptions, thrownError){ 
+                }                
+            });
+            }).catch((err) => {
+                console.log('error', err);
+            });
         alert("你已經完成登記！");
     };
 
