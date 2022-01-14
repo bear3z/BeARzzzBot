@@ -1,0 +1,31 @@
+[tool.isort]
+profile = 'black'
+lines_between_types = 1
+combine_as_imports = true
+
+[tool.poetry]
+name = "bearzzzbot"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.71.0"
+uvicorn = "^0.17.0"
+SQLAlchemy = {extras = ["asyncio"], version = "^1.4.29"}
+uvloop = {extras = ["standard"], version = "^0.16.0"}
+psycopg2-binary = "^2.9.3"
+Jinja2 = "^3.0.3"
+pydantic = {extras = ["dotenv"], version = "^1.9.0"}
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^21.12-beta.0"
+isort = "^5.10.1"
+fastapi-responses = "^0.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
