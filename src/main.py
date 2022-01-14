@@ -26,19 +26,14 @@ async def home_get(
 async def send_data_to_db(
     statement: str,
 ):
-    print(statement)
     stm = statement.split("&")
-    print(stm)
     data = []
     data.append(stm[0])
-    
-    print("!" + str(len(stm)))
+
     for i in range(1, 6):
         if stm[i] == "true":
             data.append(1)
         else:
             data.append(0)
-    print(data)
-    
     insert_db(data)
     return "OK"
