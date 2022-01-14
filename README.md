@@ -3,9 +3,9 @@
 
 ## Development
 
-Frontend: Bulma
-Backend: FastAPI
-Database: PostgreSQL
+* Frontend: Bulma
+* Backend: FastAPI
+* Database: PostgreSQL
 
 ```shell
 pip install fastapi uvicorn
