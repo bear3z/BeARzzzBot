@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from .config import Settings, get_settings
+from .db import close_db_connection, connect_to_db
 from .insert_db import insert_db
 
 
@@ -36,5 +37,13 @@ def make_app() -> FastAPI:
                 data.append(0)
         insert_db(data)
         return "OK"
+
+    @app.on_event("startup")
+    async def on_startup() -> None:  # pragma: no cover
+        connect_to_db(app)
+
+    @app.on_event("shutdown")
+    async def on_shutdown() -> None:  # pragma: no cover
+        close_db_connection(app)
 
     return app
