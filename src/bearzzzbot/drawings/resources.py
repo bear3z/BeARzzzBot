@@ -4,7 +4,7 @@ from sqlalchemy.orm.session import Session
 
 from bearzzzbot.deps import get_tx_session
 
-from .insert_db import insert_db
+from .services import upsert_drawing
 
 router = APIRouter()
 
@@ -24,4 +24,5 @@ async def send_data_to_db(
         else:
             data.append(0)
     insert_db(db_session, data)
+    upsert_drawing(db_session, data)
     return "OK"
