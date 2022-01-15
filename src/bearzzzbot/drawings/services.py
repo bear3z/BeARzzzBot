@@ -1,27 +1,17 @@
 from sqlalchemy.dialects import postgresql as pg
+from sqlalchemy.orm.session import Session
+
+from bearzzzbot.drawings.schemas import DrawingCreate, DrawingCreateIn
 
 from .models import Drawing
 
 
-def upsert_drawing(db_session, state):
-    stmt = pg.insert(Drawing).values(
-        owner=state[0],
-        wood=state[1],
-        fire=state[2],
-        one=state[3],
-        two=state[4],
-        three=state[5],
-    )
+def upsert_drawing(db_session: Session, drawing_in: DrawingCreateIn):
+    values = DrawingCreate(**drawing_in.dict()).dict()
+    stmt = pg.insert(Drawing).values(values)
 
     update = stmt.on_conflict_do_update(
         index_elements=["owner"],
-        set_={
-            "owner": state[0],
-            "wood": state[1],
-            "fire": state[2],
-            "one": state[3],
-            "two": state[4],
-            "three": state[5],
-        },
+        set_=values,
     )
     db_session.execute(update)

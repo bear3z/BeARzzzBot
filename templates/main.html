@@ -76,7 +76,6 @@
 </html>
 
 <script>
-    var id;
     var liffID = "{{liffID}}"
 
     liff.init({
@@ -90,28 +89,48 @@
         console.log(err.code, err.message);
     });
 
+        
+    function fetchStatus(response) {  
+      if (response.status >= 200 && response.status < 400) {  
+        return Promise.resolve(response)  
+      } else {  
+        return Promise.reject(new Error(response.statusText))  
+      }  
+    }
+
     document.getElementById("post").onclick = function(){
-        liff.getProfile().then(profile => {
-            id = profile.userId;
-            $.ajax({
-                url: "/api/v1/drawing/data/" + id 
-                    + "&" + document.getElementById('wood').checked
-                    + "&" + document.getElementById('fire').checked
-                    + "&" + document.getElementById('one').checked
-                    + "&" + document.getElementById('two').checked
-                    + "&" + document.getElementById('three').checked,
-                type:"get",
-                dataType:"text",
-                success: function(msg){
-                    console.log(msg);
-                },
-                error: function(xhr, ajaxOptions, thrownError){ 
-                }                
-            });
-            }).catch((err) => {
-                console.log('error', err);
-            });
+      liff.getProfile().then(profile => {
+        console.log({profile}, profile.userId)
+        return profile.userId;
+      })
+      .then(owner => {
+        let data = {
+          owner,
+          wood: document.getElementById("wood").checked,
+          fire: document.getElementById("fire").checked,
+          one: document.getElementById("one").checked,
+          two: document.getElementById("two").checked,
+          three: document.getElementById("three").checked,
+        }
+        return fetch("/api/v1/drawing", {
+          body: JSON.stringify(data),
+          cache: "no-cache",
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          redirect: "follow",
+          referrer: "no-referrer"
+        })
+      })
+      .then(fetchStatus)
+      .then(r => r.json())
+      .then(() => {
         alert("你已經完成登記！");
+      })
+      .catch((err) => {
+        console.log('error', err);
+      });
     };
 
 
