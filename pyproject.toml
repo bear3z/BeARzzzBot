@@ -19,6 +19,7 @@ uvloop = {extras = ["standard"], version = "^0.16.0"}
 psycopg2-binary = "^2.9.3"
 Jinja2 = "^3.0.3"
 pydantic = {extras = ["dotenv"], version = "^1.9.0"}
+loguru = "^0.5.3"
 
 
 [tool.poetry.group.dev.dependencies]
