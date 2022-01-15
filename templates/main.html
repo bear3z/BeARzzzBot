@@ -94,7 +94,7 @@
         liff.getProfile().then(profile => {
             id = profile.userId;
             $.ajax({
-                url: "/api/v1/drawing/data/" + id 
+                url: "/data/" + id 
                     + "&" + document.getElementById('wood').checked
                     + "&" + document.getElementById('fire').checked
                     + "&" + document.getElementById('one').checked
