@@ -1,26 +1,24 @@
-import os
-from .insert_db import insert_db
-from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, Request, HTTPException, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import Depends, FastAPI, Request
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
+from .config import Settings, get_settings
+from .insert_db import insert_db
+
 app = FastAPI()
-load_dotenv()
 templates = Jinja2Templates(directory="templates")
 
+
 @app.get("/", response_class=HTMLResponse)
-async def home_get(
-    request: Request,
-):
-    liffID = os.getenv("liffID")
+async def home_get(request: Request, settings: Settings = Depends(get_settings)):
     return templates.TemplateResponse(
         "main.html",
         {
             "request": request,
-            "liffID": liffID,
+            "liffID": settings.LIFFID,
         },
     )
+
 
 @app.get("/data/{statement}")
 async def send_data_to_db(
