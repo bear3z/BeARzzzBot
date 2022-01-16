@@ -1,4 +1,4 @@
-from bearzzzbot.schemas import SchemaBase
+from src.bearzzzbot.schemas import SchemaBase
 
 
 class DrawingBase(SchemaBase):

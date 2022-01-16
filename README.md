@@ -9,7 +9,7 @@
 
 ```shell
 pip install fastapi uvicorn
-uvicorn src.main:app --reload
+uvicorn src.bearzzzbot.asgi:app --reload
 ```
 
 ## Production
@@ -17,5 +17,5 @@ uvicorn src.main:app --reload
 * Start server
 
 ```shell
-uvicorn library_flow.main:app
+uvicorn src.bearzzzbot.asgi:app
 ```

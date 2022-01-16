@@ -1,7 +1,7 @@
 from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.orm.session import Session
 
-from bearzzzbot.drawings.schemas import DrawingCreate, DrawingCreateIn
+from src.bearzzzbot.drawings.schemas import DrawingCreate, DrawingCreateIn
 
 from .models import Drawing
 
