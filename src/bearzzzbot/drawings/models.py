@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, Column, Integer, String
 
-from src.bearzzzbot.models.base_class import Base
+from bearzzzbot.models.base_class import Base
 
 
 class Drawing(Base):

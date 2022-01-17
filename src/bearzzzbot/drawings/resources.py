@@ -2,8 +2,8 @@ from fastapi.param_functions import Body, Depends
 from fastapi.routing import APIRouter
 from sqlalchemy.orm.session import Session
 
-from src.bearzzzbot.deps import get_tx_session
-from src.bearzzzbot.drawings.schemas import DrawingCreateIn
+from bearzzzbot.deps import get_tx_session
+from bearzzzbot.drawings.schemas import DrawingCreateIn
 
 from . import services as svc
 

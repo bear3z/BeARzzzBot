@@ -8,8 +8,8 @@
 * Database: PostgreSQL
 
 ```shell
-pip install fastapi uvicorn
-uvicorn src.bearzzzbot.asgi:app --reload
+poetry install
+poetry run uvicorn bearzzzbot.asgi:app --reload
 ```
 
 ## Production
@@ -17,5 +17,6 @@ uvicorn src.bearzzzbot.asgi:app --reload
 * Start server
 
 ```shell
-uvicorn src.bearzzzbot.asgi:app
+poetry install
+poetry run uvicorn bearzzzbot.asgi:app
 ```
