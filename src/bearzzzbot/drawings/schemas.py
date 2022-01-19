@@ -8,6 +8,7 @@ class DrawingBase(SchemaBase):
     one: bool
     two: bool
     three: bool
+    reversal: bool
 
 
 class DrawingCreate(DrawingBase):

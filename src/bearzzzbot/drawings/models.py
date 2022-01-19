@@ -11,3 +11,4 @@ class Drawing(Base):
     one = Column(Boolean, default=False)
     two = Column(Boolean, default=False)
     three = Column(Boolean, default=False)
+    reversal = Column(Boolean, default=False)
