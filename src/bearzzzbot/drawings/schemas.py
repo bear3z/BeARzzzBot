@@ -17,3 +17,11 @@ class DrawingCreate(DrawingBase):
 
 class DrawingCreateIn(DrawingBase):
     ...
+
+
+class DrawingInDB(DrawingBase):
+    ...
+
+
+class DrawingRead(DrawingInDB):
+    ...
