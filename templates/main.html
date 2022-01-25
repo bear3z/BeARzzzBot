@@ -1,118 +1,244 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>煙囪上的貓 抽獎小幫手</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>煙囪上的貓 抽獎小幫手</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+  <script src="https://unpkg.com/react@16.13.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@16.13.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/htm@3.0.4/dist/htm.umd.js"></script>
+  <script src="https://unpkg.com/ky@0.23.0/umd.js"></script>
+  <script src="https://unpkg.com/react-query@3.34.8/dist/react-query.production.min.js"></script>
+  <script src="https://unpkg.com/react-error-boundary@3.1.2/dist/react-error-boundary.umd.min.js"></script>
 </head>
+
 <body>
-    <!-- TITLE -->
-    <section class="hero is-info">
-        <div class="hero-body">
-          <p class="title content has-text-centered py-6">
-            煙囪上的貓 抽獎小幫手
-          </p>
+  <div id="root" />
+
+  <script>
+    var liffID = "{{liffID}}"
+    {% raw %}
+    const {
+      React,
+      ReactDOM,
+      ReactQuery: {useMutation, useQuery, useQueryClient, QueryClient, QueryClientProvider},
+      ReactErrorBoundary: {ErrorBoundary, useErrorHandler},
+      ky,
+      leven,
+      htm,
+    } = window
+
+    const html = htm.bind(React.createElement)
+    const queryClient = new QueryClient()
+    const optionMapping = {
+      wood: "木增幅典籍",
+      fire: "火增幅典籍",
+      one: "一星技能書",
+      two: "二星技能書",
+      three: "三星技能書",
+      reversal: "逆轉",
+    }
+    function defaultDrawing() {
+      return {
+        wood: false,
+        fire: false,
+        one: false,
+        two: false,
+        three: false,
+        reversal: false,
+      }
+    }
+
+    function Spinner() {
+      return html`
+        <div
+          className="is-overlay is-flex is-justify-content-center is-align-items-center"
+          style=${{
+            backgroundColor: 'rgba(0, 0, 0, .3)',
+            zIndex: 1
+          }}
+        >
+          <div class="loader is-loading is-size-1" />
         </div>
-    </section>
+      `
+    }
 
-    <table class="table is-fullwidth mr-0">
-        <tbody>
-            <tr>
-                <th><label class="checkbox panel-block">
-                    <input type="checkbox" name="wood" id="wood">
-                    木增幅典籍
-                </label></th>
-            </tr>
-            <tr>
-                <th><label class="checkbox panel-block">
-                    <input type="checkbox" name="fire" id="fire">
-                    火增幅典籍
-                </label></th>
-            </tr>
-            <tr>
-                <th><label class="checkbox panel-block">
-                    <input type="checkbox" name="one" id="one">
-                    一星技能書
-                </label></th>
-            </tr>
-            <tr>
-                <th><label class="checkbox panel-block">
-                    <input type="checkbox" name="two" id="two">
-                    二星技能書
-                </label></th>
-            </tr>
-            <tr>
-                <th><label class="checkbox panel-block" >
-                    <input type="checkbox" name="three" id="three">
-                    三星技能書
-                </label></th> 
-            </tr>
-        </tbody>
-    </table>
+    function Drawing(props) {
+      const queryClient = useQueryClient()
+      const ownerId = props.owner && props.owner.userId
+      const [state, setState] = React.useState(defaultDrawing())
+      const [show, setShow] = React.useState(false)
+      const errorHandler = useErrorHandler()
+      const {
+        data: drawing = null,
+        error,
+        status
+      } = useQuery(
+        ["drawing", {ownerId}],
+        () => ky.get(`/api/v1/drawing?owner=${ownerId}`).json(),
+        {
+          enabled: !!ownerId,
+        }
+      )
+      const upsertDrawingMutation = useMutation(
+        data => ky.post('/api/v1/drawing', {json: data}).json(),
+        {
+          onSettled: () => {
+            setShow(true)
+            queryClient.invalidateQueries('drawing')
+            setTimeout(function() {
+              setShow(false)
+            }, 2000)
+          }
+        }
+      )
 
-    <div class="field has-addons has-addons-centered">
-        <button class="button is-white">
-        <input id="post" type="button" value="送出" onclick="doFunction();">
-        </button>
-    </div>
+      React.useEffect(() => {
+        if (drawing) {
+            setState(prev => ({...prev, ...drawing}))
+        }
+      }, [drawing])
 
-    <!-- FOOTER -->
-    <section class="hero is-info">
-        <div class="hero-foot">
+      function handleChecked(event) {
+        const value = event.target.checked
+        const name = event.target.name
+        setState((prev) => ({ ...prev, [name]: value }))
+      }
+
+      function handleSubmit(event) {
+        event.preventDefault()
+        const data = {...state, owner: ownerId}
+        upsertDrawingMutation.mutate(data)
+      }
+
+      useErrorHandler(error)
+
+      if (['idle', 'loading', 'success'].includes(status)) {
+        return html`
+          <form className="py-4 is-relative" onSubmit=${handleSubmit}>
+            ${
+              upsertDrawingMutation.isSuccess && show && html`
+                <div class="notification is-overlay is-success is-light">
+                  <button class="delete" onClick=${() => setShow(false)}></button>
+                  投票完成
+                </div>
+              `
+            }
+            <fieldset disabled=${status !== 'success'}>
+              ${
+                status !== 'success' && html`<${Spinner} />`
+              }
+              ${
+                Object.entries(optionMapping).map(([option, optionTitle]) => html`
+                  <label className="checkbox panel-block py-4 px-5" key=${option}>
+                    <input
+                      type="checkbox"
+                      id=${option}
+                      name=${option}
+                      checked=${state[option]}
+                      onChange=${handleChecked}
+                    />
+                    ${optionTitle}
+                  </label>
+                `)
+              }
+
+              <div className="field has-addons has-addons-centered mt-4">
+                <button className=${'button is-primary ' + (upsertDrawingMutation.isLoading ? 'is-loading' : '')} type="submit">
+                  送出
+                </button>
+              </div>
+            </fieldset>
+          </form>
+        `
+      }
+      return null
+    }
+
+    function DrawingView() {
+      const [owner, setOwner] = React.useState()
+
+      React.useEffect(() => {
+        if (!owner) {
+          liff.init({ liffId: liffID }).then(() => {
+            if (!liff.isLoggedIn()) {
+                liff.login();
+            }
+            liff.getProfile().then(profile => {
+              setOwner(profile)
+            })
+          })
+        }
+      }, [liff, owner])
+
+      if (!owner) {
+        return html`<${Spinner} />`
+      }
+
+      return html`
+        <section class="hero is-info">
+          <div class="hero-body">
+            <p class="title content has-text-centered py-6">
+              煙囪上的貓 抽獎小幫手
+            </p>
+          </div>
+        </section>
+
+        <${Drawing} owner=${owner} />
+
+        <section class="hero is-info">
+          <div class="hero-foot">
             <footer class="content has-text-centered py-6">
             <p>
-                煙囪貓抽獎小幫手 is created by
-                <a href="https://github.com/bear3z">BeAR3zzz</a>. The source code is
-                licensed
-                <a href="http://opensource.org/licenses/mit-license.php">MIT</a>.
+              煙囪貓抽獎小幫手 is created by BLVCK & BeAR3zzz.
             </p>
             </footer>
+          </div>
+        </section>
+      `
+    }
+
+    function App() {
+      return html`
+        <${QueryClientProvider} client=${queryClient}>
+          <${DrawingView} />
+        <//>
+        `
+    }
+
+    function ErrorFallback({error, resetErrorBoundary}) {
+      return html`
+        <div className="is-flex is-flex-direction-column is-align-items-center mt-6">
+          <p>Oh no! Something went wrong!</p>
+          <div classNmae="mt-2">
+            <p>Here's the error:</p>
+            <pre className="mt-2 has-text-danger"
+              style=${{
+                overflowY: 'scroll',
+                whiteSpace: 'break-spaces',
+              }}
+            >
+              ${error.message}
+            </pre>
+          </div>
+          <div className="mt-2">
+            <button class="button" onClick=${() => window.location.reload()}>
+              refresh
+            </button>
+          </div>
         </div>
-    </section>
+      `
+    }
+
+    ReactDOM.render(
+      html`<${ErrorBoundary} FallbackComponent=${ErrorFallback}>
+        <${App} />
+      <//>`,
+      document.getElementById('root'),
+    )
+    {% endraw %}
+  </script>
 </body>
 </html>
-
-<script>
-    var id;
-    var liffID = "{{liffID}}"
-
-    liff.init({
-        liffId: liffID
-    }).then(() => {
-        if (!liff.isLoggedIn()) {
-            liff.login();
-        }
-    })
-    .catch((err) => {
-        console.log(err.code, err.message);
-    });
-
-    document.getElementById("post").onclick = function(){
-        liff.getProfile().then(profile => {
-            id = profile.userId;
-            $.ajax({
-                url: "/api/v1/drawing/data/" + id 
-                    + "&" + document.getElementById('wood').checked
-                    + "&" + document.getElementById('fire').checked
-                    + "&" + document.getElementById('one').checked
-                    + "&" + document.getElementById('two').checked
-                    + "&" + document.getElementById('three').checked,
-                type:"get",
-                dataType:"text",
-                success: function(msg){
-                    console.log(msg);
-                },
-                error: function(xhr, ajaxOptions, thrownError){ 
-                }                
-            });
-            }).catch((err) => {
-                console.log('error', err);
-            });
-        alert("你已經完成登記！");
-    };
-
-
-</script>

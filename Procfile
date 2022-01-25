@@ -1,1 +1,1 @@
-web: uvicorn src.main:app --host=0.0.0.0 --port=${PORT:-5000}
+web: PYTHONPATH="$PWD/src" uvicorn bearzzzbot.asgi:app --host=0.0.0.0 --port=${PORT:-5000}

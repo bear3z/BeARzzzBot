@@ -1,27 +1,30 @@
-from fastapi.param_functions import Depends
+from fastapi import HTTPException
+from fastapi.param_functions import Body, Depends, Query
 from fastapi.routing import APIRouter
 from sqlalchemy.orm.session import Session
 
-from bearzzzbot.deps import get_tx_session
+from bearzzzbot.deps import get_db_session, get_tx_session
+from bearzzzbot.drawings.schemas import DrawingCreateIn, DrawingRead
 
-from .insert_db import insert_db
+from . import services as svc
 
 router = APIRouter()
 
 
-@router.get("/data/{statement}")
-async def send_data_to_db(
-    statement: str,
+@router.post("")
+async def upsert_drawing(
+    drawing_in: DrawingCreateIn = Body(...),
     db_session: Session = Depends(get_tx_session),
 ):
-    stm = statement.split("&")
-    data = []
-    data.append(stm[0])
-
-    for i in range(1, 6):
-        if stm[i] == "true":
-            data.append(1)
-        else:
-            data.append(0)
-    insert_db(db_session, data)
+    svc.upsert_drawing(db_session, drawing_in)
     return "OK"
+
+
+@router.get("", response_model=DrawingRead)
+async def get_drawing(
+    db_session: Session = Depends(get_db_session),
+    owner: str = Query(""),
+):
+    if owner:
+        return svc.get_drawing_by_owner(db_session, owner)
+    raise HTTPException(status_code=404, detail="Drawing Not Found")
